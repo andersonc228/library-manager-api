@@ -1,0 +1,14 @@
+CREATE DATABASE IF NOT EXISTS books_db_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE books_db_test;
+
+CREATE TABLE IF NOT EXISTS books (
+     id INT AUTO_INCREMENT PRIMARY KEY,
+     title VARCHAR(255) NOT NULL,
+    author VARCHAR(255) NOT NULL,
+    isbn VARCHAR(20) UNIQUE,
+    year INT,
+    description TEXT,
+    cover_url VARCHAR(512),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

@@ -1,0 +1,31 @@
+[2025-10-19 11:51:57] INFO: Book created {"id":6}
+[2025-10-19 11:58:04] ERROR: Error creating book {"msg":"SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0441569595' for key 'books.isbn'"}
+[2025-10-19 11:59:46] ERROR: Error creating book {"msg":"SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0441569595' for key 'books.isbn'"}
+[2025-10-19 12:00:34] ERROR: Error creating book {"msg":"SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0441569595' for key 'books.isbn'"}
+[2025-10-19 12:15:17] INFO: Book created {"id":10}
+[2025-10-19 12:15:44] INFO: Book created {"id":11}
+[2025-10-19 12:15:47] INFO: Book created {"id":12}
+[2025-10-19 15:41:00] INFO: Book created {"id":6}
+[2025-10-19 16:51:49] INFO: Book created {"id":7}
+[2025-10-19 16:55:37] INFO: Book created {"id":8}
+[2025-10-19 16:56:28] INFO: Book created {"id":9}
+[2025-10-19 17:05:10] INFO: Book created {"id":10}
+[2025-10-19 17:05:44] INFO: Book created {"id":11}
+[2025-10-19 17:07:00] INFO: Book created {"id":12}
+[2025-10-19 18:31:46] INFO: Book created {"id":1}
+[2025-10-19 18:39:47] INFO: Book created {"id":6}
+[2025-10-19 18:40:00] INFO: Book updated {"id":6}
+[2025-10-19 18:40:07] INFO: Book updated {"id":6}
+[2025-10-19 18:40:20] INFO: Book deleted {"id":6}
+[2025-10-19 18:46:41] INFO: Book created {"id":1}
+[2025-10-19 18:48:54] INFO: Book created {"id":1}
+[2025-10-19 18:53:16] INFO: Book created {"id":1}
+[2025-10-19 20:25:59] INFO: Book created {"id":1}
+[2025-10-19 21:59:02] INFO: Book created {"id":1}
+[2025-10-19 21:59:12] INFO: Book created {"id":1}
+[2025-10-19 22:17:55] INFO: Book created {"id":6}
+[2025-10-19 22:18:10] INFO: Book updated {"id":6}
+[2025-10-19 22:18:23] INFO: Book updated {"id":6}
+[2025-10-19 22:18:56] INFO: Book deleted {"id":6}
+[2025-10-19 22:19:13] INFO: Book created {"id":7}
+[2025-10-19 22:28:13] INFO: Book created {"id":8}
