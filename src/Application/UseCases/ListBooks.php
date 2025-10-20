@@ -1,19 +1,19 @@
 <?php
 namespace App\Application\UseCases;
 
-use App\Application\Repositories\BookRepository;
+use App\Application\Interfaces\BookRepositoryInterface;
 
 class ListBooks
 {
-    private BookRepository $repo;
+    private BookRepositoryInterface $repo;
 
-    public function __construct(BookRepository $repo)
+    public function __construct(BookRepositoryInterface $repo)
     {
         $this->repo = $repo;
     }
 
     public function execute(): array
     {
-        return $this->repo->all();
+        return $this->repo->getAll();
     }
 }

@@ -1,7 +1,7 @@
 <?php
 namespace App\Application\UseCases;
 
-use App\Application\Repositories\BookRepository;
+use App\Application\Interfaces\BookRepositoryInterface;
 use App\Domain\Entities\Book;
 use App\Infrastructure\Logger;
 use App\Infrastructure\OpenLibraryClient;
@@ -10,11 +10,11 @@ use RuntimeException;
 
 class UpdateBook
 {
-    private BookRepository $repo;
+    private BookRepositoryInterface $repo;
     private Logger $logger;
     private OpenLibraryClient $ol;
 
-    public function __construct(BookRepository $repo, Logger $logger, OpenLibraryClient $ol)
+    public function __construct(BookRepositoryInterface $repo, Logger $logger, OpenLibraryClient $ol)
     {
         $this->repo = $repo;
         $this->logger = $logger;

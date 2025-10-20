@@ -1,16 +1,16 @@
 <?php
 namespace App\Application\UseCases;
 
-use App\Application\Repositories\BookRepository;
+use App\Application\Interfaces\BookRepositoryInterface;
 use App\Infrastructure\Logger;
 use RuntimeException;
 
 class DeleteBook
 {
-    private BookRepository $repo;
+    private BookRepositoryInterface $repo;
     private Logger $logger;
 
-    public function __construct(BookRepository $repo, Logger $logger)
+    public function __construct(BookRepositoryInterface $repo, Logger $logger)
     {
         $this->repo = $repo;
         $this->logger = $logger;

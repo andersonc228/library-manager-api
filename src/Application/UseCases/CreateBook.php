@@ -1,7 +1,7 @@
 <?php
 namespace App\Application\UseCases;
 
-use App\Application\Repositories\BookRepository;
+use App\Application\Interfaces\BookRepositoryInterface;
 use App\Domain\Entities\Book;
 use App\Infrastructure\Logger;
 use App\Infrastructure\OpenLibraryClient;
@@ -10,11 +10,11 @@ use RuntimeException;
 
 class CreateBook
 {
-    private BookRepository $repo;
+    private BookRepositoryInterface $repo;
     private Logger $logger;
     private OpenLibraryClient $ol;
 
-    public function __construct(BookRepository $repo, Logger $logger, OpenLibraryClient $ol)
+    public function __construct(BookRepositoryInterface $repo, Logger $logger, OpenLibraryClient $ol)
     {
         $this->repo = $repo;
         $this->logger = $logger;
@@ -40,8 +40,8 @@ class CreateBook
 
         $book = new Book($data);
         $meta = $this->ol->fetchByISBN($book->isbn);
-        $book->description = $meta['description'] ?? $book->description;
-        $book->cover_url = $meta['cover_url'] ?? $book->cover_url;
+        $book->description = $meta['excerpts'][0]['text'] ?? $book->description;
+        $book->cover_url = $meta['cover']['small'] ?? $book->cover_url;
 
         $created = $this->repo->create($book);
         $this->logger->info('Book created', ['id' => $created->id]);

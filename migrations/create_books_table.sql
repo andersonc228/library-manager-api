@@ -10,6 +10,10 @@ CREATE TABLE IF NOT EXISTS books (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+CREATE INDEX idx_books_title ON books (title);
+CREATE INDEX idx_books_author ON books (author);
+CREATE INDEX idx_books_isbn ON books (isbn);
+
 INSERT INTO books (title, author, isbn, year, description, cover_url) VALUES
 ('1984', 'George Orwell', '0451526538', 1949, 'Distopía política sobre vigilancia y control social.', NULL),
 ('El Principito', 'Antoine de Saint-Exupéry', '9780156012195', 1943, 'Obra filosófica y poética sobre la inocencia y la sabiduría.', NULL),

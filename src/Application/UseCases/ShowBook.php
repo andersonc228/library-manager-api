@@ -1,14 +1,14 @@
 <?php
 namespace App\Application\UseCases;
 
-use App\Application\Repositories\BookRepository;
+use App\Application\Interfaces\BookRepositoryInterface;
 use RuntimeException;
 
 class ShowBook
 {
-    private BookRepository $repo;
+    private BookRepositoryInterface $repo;
 
-    public function __construct(BookRepository $repo)
+    public function __construct(BookRepositoryInterface $repo)
     {
         $this->repo = $repo;
     }

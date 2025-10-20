@@ -1,42 +1,57 @@
 <?php
 namespace App\Infrastructure;
 
+use Exception;
+use Redis;
+
 class OpenLibraryClient
 {
-    public function fetchByISBN(string $isbn): array
+    private string $baseUrl = 'https://openlibrary.org/api/books';
+    private Redis $redis;
+    private int $rateLimit = 5;
+
+    public function __construct(?Redis $redis = null)
     {
-        $isbn = preg_replace('/[^0-9Xx]/', '', $isbn);
-        if (empty($isbn)) return [];
-
-        $url = "https://openlibrary.org/api/books?bibkeys=ISBN:{$isbn}&format=json&jscmd=data";
-        $response = $this->httpGet($url);
-
-        if (!$response) return [];
-
-        $data = json_decode($response, true);
-        $key = "ISBN:{$isbn}";
-        if (!isset($data[$key])) return [];
-
-        $book = $data[$key];
-        $desc = $book['description']['value'] ?? $book['description'] ?? null;
-        $cover = $book['cover']['medium'] ?? $book['cover']['large'] ?? null;
-
-        return ['description' => $desc, 'cover_url' => $cover];
+        $this->redis = $redis ?? new Redis();
+        if (!$redis) {
+            $this->redis->connect(getenv('REDIS_HOST') ?: 'redis', 6379);
+        }
     }
 
-    private function httpGet(string $url): ?string
+    public function fetchByISBN(string $isbn): array
     {
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 10,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_USERAGENT => 'LibraryManager/1.0'
-        ]);
-        $res = curl_exec($ch);
-        $err = curl_errno($ch);
-        curl_close($ch);
+        $cacheKey = "ol:isbn:$isbn";
 
-        return $err ? null : $res;
+        $cached = $this->redis->get($cacheKey);
+        if ($cached) {
+            return json_decode($cached, true);
+        }
+
+        $this->checkRateLimit();
+
+        $url = $this->baseUrl . "?bibkeys=ISBN:$isbn&format=json&jscmd=data";
+        $response = @file_get_contents($url);
+        if (!$response) {
+            throw new Exception("Failed to fetch data from OpenLibrary");
+        }
+
+        $data = json_decode($response, true)["ISBN:$isbn"] ?? [];
+
+        $this->redis->setex($cacheKey, 3600, json_encode($data));
+
+        return $data;
+    }
+
+    private function checkRateLimit(): void
+    {
+        $key = "ol:rate_limit";
+        $current = $this->redis->get($key) ?: 0;
+
+        if ($current >= $this->rateLimit) {
+            throw new Exception("Rate limit exceeded");
+        }
+
+        $this->redis->incr($key);
+        $this->redis->expire($key, 1);
     }
 }

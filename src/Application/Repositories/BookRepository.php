@@ -69,7 +69,7 @@ class BookRepository implements BookRepositoryInterface
         return $stmt->execute([':id'=>$id]);
     }
 
-    public function all(): array
+    public function getAll(): array
     {
         $stmt = $this->db->query("SELECT * FROM books ORDER BY id DESC");
 

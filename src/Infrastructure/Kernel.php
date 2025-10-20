@@ -4,21 +4,21 @@ namespace App\Infrastructure;
 use App\Application\Factories\AuthControllerFactory;
 use App\Application\Factories\BookControllerFactory;
 use App\Infrastructure\Auth\JwtTokenService;
+use Redis;
 use Throwable;
 
-final class Kernel
+class Kernel
 {
     private static ?self $instance = null;
-    private JwtTokenService $jwt;
 
-    private function __construct()
-    {
-        $this->jwt = new JwtTokenService();
-    }
+    private function __construct() {}
 
     public static function getInstance(): self
     {
-        return self::$instance ??= new self();
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
     }
 
     public function handle(string $method, string $uri): void
@@ -27,94 +27,47 @@ final class Kernel
         $segments = explode('/', $path);
 
         try {
-            if ($this->isAuthRoute($segments, $method)) {
-                $this->handleAuth($segments);
+            if ($segments[0] === 'auth' && $method === 'POST' && ($segments[1] ?? '') === 'login') {
+                $payload = json_decode(file_get_contents('php://input'), true) ?? [];
+                $controller = AuthControllerFactory::create();
+                $controller->login($payload);
                 return;
             }
 
-            if ($this->isBooksRoute($segments)) {
-                $this->handleBooks($method, $segments);
+            if ($segments[0] === 'books') {
+                $this->authorize();
+                $controller = BookControllerFactory::create();
+
+                if ($method === 'GET' && count($segments) === 1) {
+                    $q = $_GET['q'] ?? null;
+                    $q ? $controller->search($q) : $controller->index();
+                } elseif ($method === 'POST' && count($segments) === 1) {
+                    $payload = json_decode(file_get_contents('php://input'), true) ?? [];
+                    $controller->createBook($payload);
+                } elseif ($method === 'GET' && count($segments) === 2 && is_numeric($segments[1])) {
+                    $controller->show((int)$segments[1]);
+                } elseif (in_array($method, ['PUT','PATCH']) && count($segments) === 2 && is_numeric($segments[1])) {
+                    $payload = json_decode(file_get_contents('php://input'), true) ?? [];
+                    $controller->updateBook((int)$segments[1], $payload);
+                } elseif ($method === 'DELETE' && count($segments) === 2 && is_numeric($segments[1])) {
+                    $controller->destroy((int)$segments[1]);
+                } else {
+                    JsonResponse::error('Invalid route or method', 405);
+                }
                 return;
             }
-
             JsonResponse::error('Not found', 404);
-
         } catch (Throwable $e) {
-            JsonResponse::error('Internal server error', 500, [
-                'message' => $e->getMessage()
-            ]);
-        }
-    }
-
-    private function isAuthRoute(array $segments, string $method): bool
-    {
-        return $segments[0] === 'auth' && $method === 'POST' && ($segments[1] ?? '') === 'login';
-    }
-
-    private function handleAuth(array $segments): void
-    {
-        $payload = json_decode(file_get_contents('php://input'), true) ?? [];
-        $controller = AuthControllerFactory::create();
-        $controller->login($payload);
-    }
-
-    private function isBooksRoute(array $segments): bool
-    {
-        return $segments[0] === 'books';
-    }
-
-    private function handleBooks(string $method, array $segments): void
-    {
-        $this->authorize();
-        $controller = BookControllerFactory::create();
-
-        switch (true) {
-            case $method === 'GET' && count($segments) === 1:
-                $q = $_GET['q'] ?? null;
-                $q ? $controller->search($q) : $controller->index();
-                break;
-
-            case $method === 'POST' && count($segments) === 1:
-                $payload = json_decode(file_get_contents('php://input'), true) ?? [];
-                $controller->createBook($payload);
-                break;
-
-            case $method === 'GET' && count($segments) === 2 && is_numeric($segments[1]):
-                $controller->show((int)$segments[1]);
-                break;
-
-            case in_array($method, ['PUT', 'PATCH'], true) && count($segments) === 2 && is_numeric($segments[1]):
-                $payload = json_decode(file_get_contents('php://input'), true) ?? [];
-                $controller->updateBook((int)$segments[1], $payload);
-                break;
-
-            case $method === 'DELETE' && count($segments) === 2 && is_numeric($segments[1]):
-                $controller->destroy((int)$segments[1]);
-                break;
-
-            default:
-                JsonResponse::error('Invalid route or method', 405);
+            JsonResponse::error('Internal server error', 500, ['exception' => $e->getMessage()]);
         }
     }
 
     private function authorize(): void
     {
-        $authHeader = '';
+        $headers = getallheaders();
+        $authHeader = $headers['Authorization'] ?? '';
 
-        if (function_exists('getallheaders')) {
-            $headers = getallheaders();
-            if (isset($headers['Authorization'])) {
-                $authHeader = $headers['Authorization'];
-            } elseif (isset($headers['authorization'])) {
-                $authHeader = $headers['authorization'];
-            }
-        }
-
-        if (!$authHeader && isset($_SERVER['HTTP_AUTHORIZATION'])) {
-            $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
-        }
-
-        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
+        if (!str_starts_with($authHeader, 'Bearer ')) {
             JsonResponse::error('Unauthorized: Missing token', 401);
         }
 
@@ -125,5 +78,4 @@ final class Kernel
             JsonResponse::error('Unauthorized: Invalid token', 401);
         }
     }
-
 }

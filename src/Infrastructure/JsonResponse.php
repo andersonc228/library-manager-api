@@ -25,6 +25,10 @@ class JsonResponse
             $data = ['message' => $data];
         }
 
+        if (is_array($data)) {
+            $data = ['data' => $data];
+        }
+
         echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         exit;
     }
